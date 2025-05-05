@@ -18,8 +18,6 @@ type CircularQueue struct {
 func NewCircularQueue(size int) CircularQueue {
 	cq := CircularQueue{
 		values: make([]int, size),
-		front:  0,
-		count:  0,
 	}
 
 	return cq
