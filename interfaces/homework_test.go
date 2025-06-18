@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,29 +29,20 @@ func NewContainer() *Container {
 }
 
 func (c *Container) RegisterType(name string, constructor interface{}) {
-	// need to implement
+	if _, ok := constructor.(func() interface{}); !ok {
+		fmt.Println("constructor not a function")
+		return
+	}
 	c.deps[name] = constructor
 }
 
 func (c *Container) Resolve(name string) (interface{}, error) {
-	// need to implement
-	f := c.deps[name]
-	fn := reflect.ValueOf(f)
-	if reflect.ValueOf(f).Kind() != reflect.Func {
-		return nil, fmt.Errorf("not a function")
-	}
-
-	results := fn.Call([]reflect.Value{})
-	value := results[0]
-
-	switch name {
-	case "UserService":
-		return value.Interface().(*UserService), nil
-	case "MessageService":
-		return value.Interface().(*MessageService), nil
-	default:
+	if _, ok := c.deps[name]; !ok {
 		return nil, fmt.Errorf("unknown type: %s", name)
 	}
+	fn, _ := c.deps[name].(func() interface{})
+
+	return fn(), nil
 }
 
 func TestDIContainer(t *testing.T) {
